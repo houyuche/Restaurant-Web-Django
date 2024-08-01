@@ -1,11 +1,10 @@
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from .models import LoginCredentials, OrderHistory, AvailableTimeSlots, Reservations
-from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password, check_password
-import json
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import F
 import datetime
+import json
 
 
 # Create your views here.
@@ -78,7 +77,11 @@ def get_available_time(request):
 
 def get_reservation(request):
     username = request.GET.get('username')
-    reservations = Reservations.objects.filter(username__username=username).values()
+    reservations = Reservations.objects.filter(username__username=username).select_related('time_slot').values(
+        'id', 'username__username', 'head_count', 'status', 'time_slot_id',  
+        time_slot_date=F('time_slot__date'),
+        time_slot_meal=F('time_slot__meal')    
+        )
     return JsonResponse(list(reservations), safe=False)
 
 
