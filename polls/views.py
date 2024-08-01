@@ -7,6 +7,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 import datetime
 
+
 # Create your views here.
 
 def user_login(request):
@@ -59,10 +60,21 @@ def order_history(request):
     return JsonResponse(list(orders), safe=False)
 
 
-def get_avalaible_time(request):
+def get_available_time(request):
     check_date = request.GET.get('date')
-    time = AvailableTimeSlots.objects.filter(date=check_date)
-    return JsonResponse(list(time), safe=False)
+    time_slots = AvailableTimeSlots.objects.filter(date=check_date)
+    
+    time_slots_list = [
+        {
+            "id": slot.id,
+            "date": slot.date,
+            "meal": slot.meal,
+            "capacity": slot.capacity
+        }
+        for slot in time_slots
+    ]
+    
+    return JsonResponse(time_slots_list, safe=False)
 
 def get_reservation(request):
     username = request.GET.get('username')
